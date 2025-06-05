@@ -1,0 +1,14 @@
+{
+  "name": "webxr-parcel",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "parcel src/index.html",
+    "build": "parcel build src/index.html"
+  },
+  "dependencies": {
+    "three": "^0.177.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.11.0"
+  }
+}
