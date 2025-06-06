@@ -339,7 +339,7 @@ function animate() {
 	intersectObjects( controller2 );
     if (loadedModel) {
         const elapsed = (Date.now() - startTime) / 1000; // Sekunden
-        const bounce = 0.25 * Math.sin(elapsed * 2); // 0.5 m Höhe, 1 Hz Frequenz
+        const bounce = 0.06 * Math.sin(elapsed); // 0.5 m Höhe, 1 Hz Frequenz
         loadedModel.position.y = baseY + bounce;
     }
 	renderer.render( scene, camera );
