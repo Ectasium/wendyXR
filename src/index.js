@@ -158,53 +158,78 @@ function onWindowResize() {
 
 }
 
-function onSelectStart( event ) {
+function onSelectStart(event) {
+    const controller = event.target;
+    const intersections = getIntersections(controller);
 
-	const controller = event.target;
+    if (intersections.length > 0) {
+        const intersection = intersections[0];
+        const object = intersection.object;
+        
+        // If it's part of the loaded model
+        if (object.parent && (object.parent === loadedModel || object.parent.parent === loadedModel)) {
+            // We want to move the entire model, not just the specific mesh
+            const modelRoot = loadedModel;
+            
+            // Highlight the selected part
+            object.material.emissive.b = 1;
+            controller.attach(modelRoot);
+            controller.userData.selected = modelRoot;
+            controller.userData.selectedMesh = object; // Remember which part was selected
+        } else {
+            // Handle normal objects as before
+            object.material.emissive.b = 1;
+            controller.attach(object);
+            controller.userData.selected = object;
+        }
+    }
 
-	const intersections = getIntersections( controller );
-
-	if ( intersections.length > 0 ) {
-
-		const intersection = intersections[ 0 ];
-
-		const object = intersection.object;
-		object.material.emissive.b = 1;
-		controller.attach( object );
-
-		controller.userData.selected = object;
-
-	}
-
-	controller.userData.targetRayMode = event.data.targetRayMode;
-
+    controller.userData.targetRayMode = event.data.targetRayMode;
 }
 
-function onSelectEnd( event ) {
+function onSelectEnd(event) {
+    const controller = event.target;
 
-	const controller = event.target;
-
-	if ( controller.userData.selected !== undefined ) {
-
-		const object = controller.userData.selected;
-		object.material.emissive.b = 0;
-		group.attach( object );
-
-		controller.userData.selected = undefined;
-
-	}
-
+    if (controller.userData.selected !== undefined) {
+        const object = controller.userData.selected;
+        
+        // Return highlighting to normal
+        if (controller.userData.selectedMesh) {
+            controller.userData.selectedMesh.material.emissive.b = 0;
+        } else if (object.material) {
+            object.material.emissive.b = 0;
+        }
+        
+        group.attach(object);
+        controller.userData.selected = undefined;
+        controller.userData.selectedMesh = undefined;
+    }
 }
 
-function getIntersections( controller ) {
-
-	controller.updateMatrixWorld();
-
-	raycaster.setFromXRController( controller );
-
-	return raycaster.intersectObjects( group.children, false );
-
+function getIntersections(controller) {
+    controller.updateMatrixWorld();
+    raycaster.setFromXRController(controller);
+    
+    // Get all objects to test, including individual meshes in loaded models
+    const objectsToTest = [];
+    
+    // Add standard geometric objects
+    group.children.forEach(object => {
+        if (object.isMesh) {
+            objectsToTest.push(object);
+        } else if (object.isGroup) {
+            // For GLB models that are groups with child meshes
+            object.traverse(child => {
+                if (child.isMesh) {
+                    objectsToTest.push(child);
+                }
+            });
+        }
+    });
+    
+    return raycaster.intersectObjects(objectsToTest, false);
 }
+
 
 function loadModel(modelurl) {
     const loader = new GLTFLoader();
@@ -218,8 +243,15 @@ function loadModel(modelurl) {
             loadedModel = gltf.scene;
             loadedModel.position.set(0, 1.3, 0);
             loadedModel.scale.set(0.1, 0.1, 0.1);
-            scene.add(loadedModel);
-            console.log('✅ Model successfully loaded and added to scene!');
+            group.add(loadedModel);
+			console.log('✅ Model successfully loaded and added to scene!');
+			
+			loadedModel.traverse(function(child) {
+                if (child.isMesh) {
+                    // Add material properties needed for highlighting
+                    child.material.emissive = child.material.emissive || new THREE.Color(0, 0, 0);
+                }
+            });
         },
         (xhr) => {
             if (xhr.lengthComputable) {
@@ -236,46 +268,39 @@ function loadModel(modelurl) {
     );
 }
 
-function intersectObjects( controller ) {
+function intersectObjects(controller) {
+    // Do not highlight in mobile-ar
+    if (controller.userData.targetRayMode === 'screen') return;
 
-	// Do not highlight in mobile-ar
+    // Do not highlight when already selected
+    if (controller.userData.selected !== undefined) return;
 
-	if ( controller.userData.targetRayMode === 'screen' ) return;
+    const line = controller.getObjectByName('line');
+    const intersections = getIntersections(controller);
 
-	// Do not highlight when already selected
+    if (intersections.length > 0) {
+        const intersection = intersections[0];
+        const object = intersection.object;
+        
+        // Make sure the object has the material property before accessing it
+        if (object.material) {
+            object.material.emissive.r = 1;
+            intersected.push(object);
+        }
 
-	if ( controller.userData.selected !== undefined ) return;
-
-	const line = controller.getObjectByName( 'line' );
-	const intersections = getIntersections( controller );
-
-	if ( intersections.length > 0 ) {
-
-		const intersection = intersections[ 0 ];
-
-		const object = intersection.object;
-		object.material.emissive.r = 1;
-		intersected.push( object );
-
-		line.scale.z = intersection.distance;
-
-	} else {
-
-		line.scale.z = 5;
-
-	}
-
+        line.scale.z = intersection.distance;
+    } else {
+        line.scale.z = 5;
+    }
 }
 
 function cleanIntersected() {
-
-	while ( intersected.length ) {
-
-		const object = intersected.pop();
-		object.material.emissive.r = 0;
-
-	}
-
+    while (intersected.length) {
+        const object = intersected.pop();
+        if (object && object.material) {
+            object.material.emissive.r = 0;
+        }
+    }
 }
 
 //
