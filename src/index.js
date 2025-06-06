@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'; 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import officeModelUrl from './models/office.glb';
 
 let container;
 let camera, scene, renderer;
@@ -206,24 +207,18 @@ function getIntersections( controller ) {
 
 }
 
-
 function loadModel() {
     const loader = new GLTFLoader();
-    
-    // Hardcoded absolute path to the model
-    const modelPath = 'models/office.glb';
-    
+    const modelPath = officeModelUrl; // use the imported URL
+
     console.log('Loading model from path:', modelPath);
-    
+
     loader.load(
         modelPath,
-        (gltf) => {
+        gltf => {
             loadedModel = gltf.scene;
-            
-            // Optional: Position and scale the model if needed
             loadedModel.position.set(0, 0, 0);
             loadedModel.scale.set(1, 1, 1);
-            
             scene.add(loadedModel);
             console.log('✅ Model successfully loaded and added to scene!');
         },

@@ -9,6 +9,7 @@
     "three": "^0.177.0"
   },
   "devDependencies": {
+    "@parcel/transformer-raw": "^2.15.2",
     "parcel": "^2.11.0"
   }
 }
