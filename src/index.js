@@ -34,12 +34,12 @@ function init() {
 	controls.target.set( 0, 1.6, 0 );
 	controls.update();
 
-	const floorGeometry = new THREE.PlaneGeometry( 6, 6 );
-	const floorMaterial = new THREE.ShadowMaterial( { opacity: 0.25, blending: THREE.CustomBlending, transparent: false } );
-	const floor = new THREE.Mesh( floorGeometry, floorMaterial );
-	floor.rotation.x = - Math.PI / 2;
-	floor.receiveShadow = true;
-	scene.add( floor );
+	// const floorGeometry = new THREE.PlaneGeometry( 6, 6 );
+	// const floorMaterial = new THREE.ShadowMaterial( { opacity: 0.25, blending: THREE.CustomBlending, transparent: false } );
+	// const floor = new THREE.Mesh( floorGeometry, floorMaterial );
+	// floor.rotation.x = - Math.PI / 2;
+	// floor.receiveShadow = true;
+	// scene.add( floor );
 
 	scene.add( new THREE.HemisphereLight( 0xbcbcbc, 0xa5a5a5, 3 ) );
 
@@ -64,7 +64,7 @@ function init() {
 		new THREE.TorusGeometry( 0.2, 0.04, 64, 32 )
 	];
 
-	for ( let i = 0; i < 50; i ++ ) {
+	for ( let i = 0; i < 5; i ++ ) {
 
 		const geometry = geometries[ Math.floor( Math.random() * geometries.length ) ];
 		const material = new THREE.MeshStandardMaterial( {
@@ -217,7 +217,7 @@ function loadModel(modelurl) {
         gltf => {
             loadedModel = gltf.scene;
             loadedModel.position.set(0, 1.3, 0);
-            loadedModel.scale.set(0.3, 0.3, 0.3);
+            loadedModel.scale.set(0.1, 0.1, 0.1);
             scene.add(loadedModel);
             console.log('✅ Model successfully loaded and added to scene!');
         },
