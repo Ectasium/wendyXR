@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'; 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import officeModelUrl from './models/office.glb';
+import officeModelUrl from './models/wendy.glb';
 
 let container;
 let camera, scene, renderer;
