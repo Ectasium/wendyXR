@@ -85,7 +85,8 @@ function init() {
 		object.castShadow = true;
 		object.receiveShadow = true;
 
-		group.add( object );
+		group.add(object);
+		loadModel();
 
 	}
 
@@ -200,6 +201,41 @@ function getIntersections( controller ) {
 
 	return raycaster.intersectObjects( group.children, false );
 
+}
+
+function loadModel() {
+	function loadModel() {
+		const loader = new GLTFLoader();
+		
+		// Try different path formats to locate your file
+		const modelPath = './models/office.glb';
+		
+		// Log the attempted path for debugging
+		console.log('Loading model from:', new URL(modelPath, window.location.href).href);
+		
+		loader.load(
+			modelPath,
+			(gltf) => {
+				const model = gltf.scene;
+				loadedModel = model;
+				scene.add(model);
+				console.log('✅ Model successfully loaded and added to scene!');
+			},
+			(xhr) => {
+				if (xhr.lengthComputable) {
+					const progress = (xhr.loaded / xhr.total) * 100;
+					console.log(`Loading model: ${progress.toFixed(2)}% completed`);
+				} else {
+					console.log(`Loaded ${xhr.loaded} bytes`);
+				}
+			},
+			(error) => {
+				console.error('❌ Error loading model:', error);
+				console.error('Please check if the file exists and the path is correct.');
+			}
+		);
+	}
+	
 }
 
 function intersectObjects( controller ) {
