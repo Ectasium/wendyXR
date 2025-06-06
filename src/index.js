@@ -2,11 +2,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'; 
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 let container;
 let camera, scene, renderer;
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
+let loadedModel;
 
 let raycaster;
 
@@ -86,7 +88,7 @@ function init() {
 		object.receiveShadow = true;
 
 		group.add(object);
-		loadModel();
+		
 
 	}
 
@@ -143,6 +145,7 @@ function init() {
 	//
 
 	window.addEventListener( 'resize', onWindowResize );
+	loadModel();
 
 }
 
@@ -203,39 +206,40 @@ function getIntersections( controller ) {
 
 }
 
+
 function loadModel() {
-	function loadModel() {
-		const loader = new GLTFLoader();
-		
-		// Try different path formats to locate your file
-		const modelPath = './models/office.glb';
-		
-		// Log the attempted path for debugging
-		console.log('Loading model from:', new URL(modelPath, window.location.href).href);
-		
-		loader.load(
-			modelPath,
-			(gltf) => {
-				const model = gltf.scene;
-				loadedModel = model;
-				scene.add(model);
-				console.log('✅ Model successfully loaded and added to scene!');
-			},
-			(xhr) => {
-				if (xhr.lengthComputable) {
-					const progress = (xhr.loaded / xhr.total) * 100;
-					console.log(`Loading model: ${progress.toFixed(2)}% completed`);
-				} else {
-					console.log(`Loaded ${xhr.loaded} bytes`);
-				}
-			},
-			(error) => {
-				console.error('❌ Error loading model:', error);
-				console.error('Please check if the file exists and the path is correct.');
-			}
-		);
-	}
-	
+    const loader = new GLTFLoader();
+    
+    // Hardcoded absolute path to the model
+    const modelPath = 'models/office.glb';
+    
+    console.log('Loading model from path:', modelPath);
+    
+    loader.load(
+        modelPath,
+        (gltf) => {
+            loadedModel = gltf.scene;
+            
+            // Optional: Position and scale the model if needed
+            loadedModel.position.set(0, 0, 0);
+            loadedModel.scale.set(1, 1, 1);
+            
+            scene.add(loadedModel);
+            console.log('✅ Model successfully loaded and added to scene!');
+        },
+        (xhr) => {
+            if (xhr.lengthComputable) {
+                const progress = (xhr.loaded / xhr.total) * 100;
+                console.log(`Loading model: ${progress.toFixed(2)}% completed`);
+            } else {
+                console.log(`Loaded ${xhr.loaded} bytes`);
+            }
+        },
+        (error) => {
+            console.error('❌ Error loading model:', error);
+            console.error('Failed to load model from path:', modelPath);
+        }
+    );
 }
 
 function intersectObjects( controller ) {
