@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'; 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import officeModelUrl from './models/office.glb';
+import officeModelUrl from './models/padlock.glb';
 
 let container;
 let camera, scene, renderer;
@@ -146,8 +146,7 @@ function init() {
 	//
 
 	window.addEventListener( 'resize', onWindowResize );
-	loadModel();
-
+	loadModel(officeModelUrl);
 }
 
 function onWindowResize() {
@@ -207,9 +206,9 @@ function getIntersections( controller ) {
 
 }
 
-function loadModel() {
+function loadModel(modelurl) {
     const loader = new GLTFLoader();
-    const modelPath = officeModelUrl; // use the imported URL
+    const modelPath = modelurl; // use the imported URL
 
     console.log('Loading model from path:', modelPath);
 
@@ -217,8 +216,8 @@ function loadModel() {
         modelPath,
         gltf => {
             loadedModel = gltf.scene;
-            loadedModel.position.set(0, 0, 0);
-            loadedModel.scale.set(1, 1, 1);
+            loadedModel.position.set(0, 1.3, 0);
+            loadedModel.scale.set(0.3, 0.3, 0.3);
             scene.add(loadedModel);
             console.log('✅ Model successfully loaded and added to scene!');
         },
