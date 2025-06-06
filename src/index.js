@@ -42,30 +42,30 @@ function init() {
     // scene.add( floor );
     
     // Add a button to enter stereoscopic mode
-const stereoButton = document.createElement('button');
-stereoButton.textContent = 'Enter Stereoscopic View';
-stereoButton.style.position = 'absolute';
-stereoButton.style.bottom = '20px';
-stereoButton.style.left = '20px';
-stereoButton.style.padding = '12px';
-stereoButton.style.border = 'none';
-stereoButton.style.borderRadius = '4px';
-stereoButton.style.backgroundColor = '#00A3E0';
-stereoButton.style.color = 'white';
-stereoButton.style.cursor = 'pointer';
+    const stereoButton = document.createElement('button');
+    stereoButton.textContent = 'VR Glasses Mode';
+    stereoButton.style.position = 'absolute';
+    stereoButton.style.top = '20px';
+    stereoButton.style.left = '20px';
+    stereoButton.style.padding = '12px';
+    stereoButton.style.border = 'none';
+    stereoButton.style.borderRadius = '4px';
+    stereoButton.style.backgroundColor = '#00A3E0';
+    stereoButton.style.color = 'white';
+    stereoButton.style.cursor = 'pointer';
 
-stereoButton.addEventListener('click', () => {
-  if (renderer.xr.isPresenting) {
-    renderer.xr.getSession().end();
-  } else {
-    // Request a WebXR session with stereoscopic rendering
-    navigator.xr.requestSession('immersive-vr', {
-      optionalFeatures: ['local-floor', 'bounded-floor']
-    }).then(onSessionStarted);
-  }
-});
+    stereoButton.addEventListener('click', () => {
+    if (renderer.xr.isPresenting) {
+        renderer.xr.getSession().end();
+    } else {
+        // Request a WebXR session with stereoscopic rendering
+        navigator.xr.requestSession('immersive-vr', {
+        optionalFeatures: ['local-floor', 'bounded-floor']
+        }).then(onSessionStarted);
+    }
+    });
 
-document.body.appendChild(stereoButton);
+    document.body.appendChild(stereoButton);
 
 	scene.add( new THREE.HemisphereLight( 0xbcbcbc, 0xa5a5a5, 3 ) );
 
