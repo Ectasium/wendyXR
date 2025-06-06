@@ -10,12 +10,12 @@ let camera, scene, renderer;
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
 let loadedModel;
-
 let raycaster;
-
 const intersected = [];
-
 let controls, group;
+let baseY = 0;          
+let startTime = Date.now(); 
+
 
 init();
 
@@ -268,6 +268,8 @@ function loadModel(modelurl) {
         gltf => {
             loadedModel = gltf.scene;
             loadedModel.position.set(0, 1.3, 0);
+            loadedModel.position.set(0, 1.3, 0);
+            baseY = 1.3; // speichere Ausgangshöhe
             loadedModel.scale.set(0.1, 0.1, 0.1);
             group.add(loadedModel);
 			console.log('✅ Model successfully loaded and added to scene!');
@@ -335,7 +337,11 @@ function animate() {
 
 	intersectObjects( controller1 );
 	intersectObjects( controller2 );
-
+    if (loadedModel) {
+        const elapsed = (Date.now() - startTime) / 1000; // Sekunden
+        const bounce = 0.25 * Math.sin(elapsed * 2); // 0.5 m Höhe, 1 Hz Frequenz
+        loadedModel.position.y = baseY + bounce;
+    }
 	renderer.render( scene, camera );
 
 }
