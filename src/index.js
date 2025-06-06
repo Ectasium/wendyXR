@@ -39,7 +39,33 @@ function init() {
 	// const floor = new THREE.Mesh( floorGeometry, floorMaterial );
 	// floor.rotation.x = - Math.PI / 2;
 	// floor.receiveShadow = true;
-	// scene.add( floor );
+    // scene.add( floor );
+    
+    // Add a button to enter stereoscopic mode
+const stereoButton = document.createElement('button');
+stereoButton.textContent = 'Enter Stereoscopic View';
+stereoButton.style.position = 'absolute';
+stereoButton.style.bottom = '20px';
+stereoButton.style.left = '20px';
+stereoButton.style.padding = '12px';
+stereoButton.style.border = 'none';
+stereoButton.style.borderRadius = '4px';
+stereoButton.style.backgroundColor = '#00A3E0';
+stereoButton.style.color = 'white';
+stereoButton.style.cursor = 'pointer';
+
+stereoButton.addEventListener('click', () => {
+  if (renderer.xr.isPresenting) {
+    renderer.xr.getSession().end();
+  } else {
+    // Request a WebXR session with stereoscopic rendering
+    navigator.xr.requestSession('immersive-vr', {
+      optionalFeatures: ['local-floor', 'bounded-floor']
+    }).then(onSessionStarted);
+  }
+});
+
+document.body.appendChild(stereoButton);
 
 	scene.add( new THREE.HemisphereLight( 0xbcbcbc, 0xa5a5a5, 3 ) );
 
@@ -89,11 +115,7 @@ function init() {
 		object.receiveShadow = true;
 
 		group.add(object);
-		
-
 	}
-
-	//
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
@@ -106,7 +128,11 @@ function init() {
 	document.body.appendChild( XRButton.createButton( renderer, {
 		'optionalFeatures': [ 'depth-sensing' ],
 		'depthSensing': { 'usagePreference': [ 'gpu-optimized' ], 'dataFormatPreference': [] }
-	} ) );
+    }));
+    
+    function onSessionStarted(session) {
+        renderer.xr.setSession(session);
+      }
 
 	// controllers
 
@@ -302,8 +328,6 @@ function cleanIntersected() {
         }
     }
 }
-
-//
 
 function animate() {
 
