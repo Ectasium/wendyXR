@@ -193,7 +193,7 @@ function onSelectStart(event) {
         const object = intersection.object;
         
         // If it's part of the loaded model
-        if (object.parent && (object.parent === loadedModel || object.parent.parent === loadedModel)) {
+        if (object.parent && (object.parent.parent === loadedModel)) {
             // We want to move the entire model, not just the specific mesh
             const modelRoot = loadedModel;
             
