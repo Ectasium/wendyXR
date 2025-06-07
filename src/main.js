@@ -308,9 +308,9 @@ function animate() {
 		const elapsed = (Date.now() - startTime) / 1000;
 		const bounce = 0.06 * Math.sin(elapsed);
 		loadedModel.position.y = baseY + bounce;
-	}
+}
 
-	// Distance in front of camera
+// Distance in front of camera
 const distance = 0.5;
 // Get camera forward direction
 const cameraDirection = new THREE.Vector3();
@@ -318,12 +318,12 @@ camera.getWorldDirection(cameraDirection);
 
 // Calculate new position: in front + 1 meter down
 vubeButton.position.copy(camera.position)
-  .add(cameraDirection.multiplyScalar(distance))  // in front
-  .add(new THREE.Vector3(0, -0.2, 0));              // 1 meter down
+.add(cameraDirection.multiplyScalar(distance))  // in front
+.add(new THREE.Vector3(0, -0.2, 0));              // 1 meter down
 
 // Make button face same way as camera (parallel)
 vubeButton.quaternion.copy(camera.quaternion);
 
-	renderer.render( scene, camera );
+renderer.render( scene, camera );
 
 }
