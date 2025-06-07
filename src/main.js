@@ -188,8 +188,8 @@ function onSelectStart(event) {
 
 	if (intersections.length > 0 && intersections[0].object.name === 'vubeButton') {
 		if (loadedModel) {
-			loadedModel.rotation.y += Math.PI / 4;
-			loadedModel.position.x += 0.1;
+			//loadedModel.rotation.y += Math.PI / 4;
+			loadedModel.position.z += 0.1;
 		}
 		return;
 	}
