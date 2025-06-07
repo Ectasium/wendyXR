@@ -4,7 +4,7 @@ import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'; 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import officeModelUrl from './models/wendy.glb';
-import ThreeMeshUI from 'three-mesh-ui';
+//import ThreeMeshUI from 'three-mesh-ui';
 
 let container;
 let camera, scene, renderer;
@@ -72,8 +72,8 @@ function init() {
 	scene.add( group );
 
 	const geometries = [
-		new THREE.BoxGeometry( 0.2, 0.2, 0.2 ),
-		new THREE.ConeGeometry( 0.2, 0.2, 64 ),
+		//new THREE.BoxGeometry( 0.2, 0.2, 0.2 ),
+		//new THREE.ConeGeometry( 0.2, 0.2, 64 ),
 		new THREE.CylinderGeometry( 0.2, 0.2, 0.2, 64 ),
 		new THREE.IcosahedronGeometry( 0.2, 8 ),
 		new THREE.TorusGeometry( 0.2, 0.04, 64, 32 )
@@ -141,7 +141,7 @@ function init() {
 	raycaster = new THREE.Raycaster();
 
 	// Create vubeButton
-	const buttonGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.05);
+	const buttonGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.01);
 	const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 	vubeButton = new THREE.Mesh(buttonGeometry, buttonMaterial);
 	vubeButton.name = 'vubeButton';
@@ -151,27 +151,30 @@ function init() {
 	loadModel(officeModelUrl);
 }
 
-const container2 = new ThreeMeshUI.Block({
- width: 1.2,
- height: 0.7,
- padding: 0.2,
- fontFamily: './assets/Roboto-msdf.json',
- fontTexture: './assets/Roboto-msdf.png',
-});
+/////////////////////////////////////////////////////
+// UI not working yet
+// const container2 = new ThreeMeshUI.Block({
+//  width: 1.2,
+//  height: 0.7,
+//  padding: 0.2,
+//  fontFamily: './assets/Roboto-msdf.json',
+//  fontTexture: './assets/Roboto-msdf.png',
+// });
 
-//
+// //
 
-const text = new ThreeMeshUI.Text({
- content: "Some text to be displayed"
-});
+// const text = new ThreeMeshUI.Text({
+//  content: "Some text to be displayed"
+// });
 
-container2.add( text );
+// container2.add( text );
 
-// scene is a THREE.Scene (see three.js)
-scene.add( container2 );
+// // scene is a THREE.Scene (see three.js)
+// scene.add( container2 );
 
-// This is typically done in the render loop :
-ThreeMeshUI.update();
+// // This is typically done in the render loop :
+// ThreeMeshUI.update();
+//////////////////////////////////////////////////////////
 
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
@@ -307,14 +310,19 @@ function animate() {
 		loadedModel.position.y = baseY + bounce;
 	}
 
-	// Make vubeButton stay in front of camera
-	const distance = 0.5;
-	const cameraDirection = new THREE.Vector3();
-	camera.getWorldDirection(cameraDirection);
-	vubeButton.position.copy(camera.position).add(cameraDirection.multiplyScalar(distance));
-	vubeButton.lookAt(camera.position);
-	// This is typically done in the render loop :
-	ThreeMeshUI.update();
+	// Distance in front of camera
+const distance = 0.5;
+// Get camera forward direction
+const cameraDirection = new THREE.Vector3();
+camera.getWorldDirection(cameraDirection);
+
+// Calculate new position: in front + 1 meter down
+vubeButton.position.copy(camera.position)
+  .add(cameraDirection.multiplyScalar(distance))  // in front
+  .add(new THREE.Vector3(0, -0.2, 0));              // 1 meter down
+
+// Make button face same way as camera (parallel)
+vubeButton.quaternion.copy(camera.quaternion);
 
 	renderer.render( scene, camera );
 
