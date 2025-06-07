@@ -140,8 +140,8 @@ function init() {
 	raycaster = new THREE.Raycaster();
 
 	// Create vubeButton
-	const buttonGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.05);
-	const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+	const buttonGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.01);
+	const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
 	vubeButton = new THREE.Mesh(buttonGeometry, buttonMaterial);
 	vubeButton.name = 'vubeButton';
 	scene.add(vubeButton);
@@ -286,10 +286,16 @@ function animate() {
 
 	// Make vubeButton stay in front of camera
 	const distance = 0.5;
-	const cameraDirection = new THREE.Vector3();
-	camera.getWorldDirection(cameraDirection);
-	vubeButton.position.copy(camera.position).add(cameraDirection.multiplyScalar(distance));
-	vubeButton.lookAt(camera.position);
+    const cameraDirection = new THREE.Vector3();
+    camera.getWorldDirection(cameraDirection);
 
-	renderer.render( scene, camera );
+    // Position in front of camera and slightly down
+    vubeButton.position.copy(camera.position)
+    .add(cameraDirection.multiplyScalar(distance))
+    .add(new THREE.Vector3(0, -0.2, 0));
+
+    // Keep the cube aligned with the camera's view (frustum-parallel)
+    vubeButton.quaternion.copy(camera.quaternion);
+
+    renderer.render(scene, camera);
 }
