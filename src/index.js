@@ -16,7 +16,6 @@ let controls, group;
 let baseY = 0;          
 let startTime = Date.now(); 
 
-
 init();
 
 function init() {
@@ -343,5 +342,4 @@ function animate() {
         loadedModel.position.y = baseY + bounce;
     }
 	renderer.render( scene, camera );
-
 }
