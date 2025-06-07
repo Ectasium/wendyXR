@@ -4,6 +4,7 @@ import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'; 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import officeModelUrl from './models/wendy.glb';
+import ThreeMeshUI from 'three-mesh-ui';
 
 let container;
 let camera, scene, renderer;
@@ -150,6 +151,28 @@ function init() {
 	loadModel(officeModelUrl);
 }
 
+const container2 = new ThreeMeshUI.Block({
+ width: 1.2,
+ height: 0.7,
+ padding: 0.2,
+ fontFamily: './assets/Roboto-msdf.json',
+ fontTexture: './assets/Roboto-msdf.png',
+});
+
+//
+
+const text = new ThreeMeshUI.Text({
+ content: "Some text to be displayed"
+});
+
+container2.add( text );
+
+// scene is a THREE.Scene (see three.js)
+scene.add( container2 );
+
+// This is typically done in the render loop :
+ThreeMeshUI.update();
+
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
@@ -290,6 +313,8 @@ function animate() {
 	camera.getWorldDirection(cameraDirection);
 	vubeButton.position.copy(camera.position).add(cameraDirection.multiplyScalar(distance));
 	vubeButton.lookAt(camera.position);
+	// This is typically done in the render loop :
+	ThreeMeshUI.update();
 
 	renderer.render( scene, camera );
 
