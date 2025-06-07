@@ -140,8 +140,8 @@ function init() {
 	raycaster = new THREE.Raycaster();
 
 	// Create vubeButton
-	const buttonGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.01);
-	const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+	const buttonGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.05);
+	const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 	vubeButton = new THREE.Mesh(buttonGeometry, buttonMaterial);
 	vubeButton.name = 'vubeButton';
 	scene.add(vubeButton);
@@ -284,6 +284,7 @@ function animate() {
 		loadedModel.position.y = baseY + bounce;
 	}
 
+<<<<<<< HEAD
 	// Helper: create a canvas texture with "CLICK" text
 function createClickTexture() {
     const canvas = document.createElement('canvas');
@@ -337,4 +338,14 @@ vubeButton.quaternion.copy(camera.quaternion);
 
 
     renderer.render(scene, camera);
+=======
+	// Make vubeButton stay in front of camera
+	const distance = 0.5;
+	const cameraDirection = new THREE.Vector3();
+	camera.getWorldDirection(cameraDirection);
+	vubeButton.position.copy(camera.position).add(cameraDirection.multiplyScalar(distance));
+	vubeButton.lookAt(camera.position);
+
+	renderer.render( scene, camera );
+>>>>>>> parent of a81edcd (button enhancement)
 }
