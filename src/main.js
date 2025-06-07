@@ -284,18 +284,57 @@ function animate() {
 		loadedModel.position.y = baseY + bounce;
 	}
 
-	// Make vubeButton stay in front of camera
-	const distance = 0.5;
-    const cameraDirection = new THREE.Vector3();
-    camera.getWorldDirection(cameraDirection);
+	// Helper: create a canvas texture with "CLICK" text
+function createClickTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
 
-    // Position in front of camera and slightly down
-    vubeButton.position.copy(camera.position)
+    // Fill background white
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw black "CLICK" text centered
+    ctx.fillStyle = 'black';
+    ctx.font = 'bold 64px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('CLICK', canvas.width / 2, canvas.height / 2);
+
+    return new THREE.CanvasTexture(canvas);
+}
+
+// Create the materials array with white for all faces except front with the text texture
+const whiteMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+const clickTextureMaterial = new THREE.MeshStandardMaterial({ map: createClickTexture() });
+
+const materials = [
+    whiteMaterial,  // right
+    whiteMaterial,  // left
+    whiteMaterial,  // top
+    whiteMaterial,  // bottom
+    clickTextureMaterial,  // front (z+)
+    whiteMaterial   // back
+];
+
+// Assuming vubeButton is your mesh, update its geometry and materials accordingly
+vubeButton.geometry = new THREE.BoxGeometry(0.15, 0.15, 0.05);
+vubeButton.material = materials;
+
+// Position and orient the button as before:
+const distance = 0.5;
+const cameraDirection = new THREE.Vector3();
+camera.getWorldDirection(cameraDirection);
+
+// Position in front of camera and slightly down
+vubeButton.position.copy(camera.position)
     .add(cameraDirection.multiplyScalar(distance))
     .add(new THREE.Vector3(0, -0.2, 0));
 
-    // Keep the cube aligned with the camera's view (frustum-parallel)
-    vubeButton.quaternion.copy(camera.quaternion);
+// Align button with camera quaternion so it stays parallel and front faces camera
+vubeButton.quaternion.copy(camera.quaternion);
+
 
     renderer.render(scene, camera);
 }
