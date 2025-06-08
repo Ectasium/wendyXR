@@ -4,11 +4,7 @@ import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'; 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import officeModelUrl from './models/wendy.glb';
-<<<<<<< HEAD
-import * as DigitalBaconUI from 'DigitalBacon.js';
-=======
 //import ThreeMeshUI from 'three-mesh-ui';
->>>>>>> parent of 9067830 (Revert "button enhancement")
 
 let container;
 let camera, scene, renderer;
