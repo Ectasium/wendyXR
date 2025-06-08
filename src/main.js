@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import officeModelUrl from './models/wendy.glb'; // Path to your GLB model
+import WendyModelUrl from './models/wendy.glb'; // Path to your GLB model
 
 // Declare variables for global use
 let container;
@@ -204,7 +204,7 @@ function init() {
 
 	window.addEventListener('resize', onWindowResize); // Handle screen resize
 
-	loadModel(officeModelUrl); // Load GLB model
+	loadModel(WendyModelUrl); // Load GLB model
 }
 
 // Handle window resizing
