@@ -4,7 +4,7 @@ import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'; 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import officeModelUrl from './models/wendy.glb';
-//import ThreeMeshUI from 'three-mesh-ui';
+import * as DigitalBaconUI from 'DigitalBacon-UI';
 
 let container;
 let camera, scene, renderer;
@@ -17,35 +17,37 @@ let controls, group;
 let baseY = 0;          
 let startTime = Date.now(); 
 let vubeButton;
+let uiBody;
 
 init();
 
-function init() {
-	container = document.createElement( 'div' );
-	document.body.appendChild( container );
+async function init() {
+	container = document.createElement('div');
+	document.body.appendChild(container);
 
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color( 0x808080 );
+	scene.background = new THREE.Color(0x808080);
 
-	camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10 );
-	camera.position.set( 0, 1.6, 3 );
+	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 10);
+	camera.position.set(0, 1.6, 3);
 
-	controls = new OrbitControls( camera, container );
-	controls.target.set( 0, 1.6, 0 );
+	controls = new OrbitControls(camera, container);
+	controls.target.set(0, 1.6, 0);
 	controls.update();
 
 	const stereoButton = document.createElement('button');
 	stereoButton.textContent = 'VR Glasses Mode';
-	stereoButton.style.position = 'absolute';
-	stereoButton.style.top = '20px';
-	stereoButton.style.left = '20px';
-	stereoButton.style.padding = '12px';
-	stereoButton.style.border = 'none';
-	stereoButton.style.borderRadius = '4px';
-	stereoButton.style.backgroundColor = '#00A3E0';
-	stereoButton.style.color = 'white';
-	stereoButton.style.cursor = 'pointer';
-
+	Object.assign(stereoButton.style, {
+		top: '20px',
+		left: '20px',
+		position: 'absolute',
+		padding: '12px',
+		border: 'none',
+		borderRadius: '4px',
+		backgroundColor: '#00A3E0',
+		color: 'white',
+		cursor: 'pointer'
+	});
 	stereoButton.addEventListener('click', () => {
 		if (renderer.xr.isPresenting) {
 			renderer.xr.getSession().end();
@@ -57,129 +59,152 @@ function init() {
 	});
 	document.body.appendChild(stereoButton);
 
-	scene.add( new THREE.HemisphereLight( 0xbcbcbc, 0xa5a5a5, 3 ) );
-	const light = new THREE.DirectionalLight( 0xffffff, 3 );
-	light.position.set( 0, 6, 0 );
+	scene.add(new THREE.HemisphereLight(0xbcbcbc, 0xa5a5a5, 3));
+	const light = new THREE.DirectionalLight(0xffffff, 3);
+	light.position.set(0, 6, 0);
 	light.castShadow = true;
 	light.shadow.camera.top = 3;
-	light.shadow.camera.bottom = - 3;
+	light.shadow.camera.bottom = -3;
 	light.shadow.camera.right = 3;
-	light.shadow.camera.left = - 3;
-	light.shadow.mapSize.set( 4096, 4096 );
-	scene.add( light );
+	light.shadow.camera.left = -3;
+	light.shadow.mapSize.set(4096, 4096);
+	scene.add(light);
 
 	group = new THREE.Group();
-	scene.add( group );
+	scene.add(group);
 
+	renderer = new THREE.WebGLRenderer({ antialias: true });
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setAnimationLoop(animate);
+	renderer.shadowMap.enabled = true;
+	renderer.xr.enabled = true;
+	container.appendChild(renderer.domElement);
+	document.body.appendChild(XRButton.createButton(renderer, {
+		optionalFeatures: ['depth-sensing'],
+		depthSensing: { usagePreference: ['gpu-optimized'], dataFormatPreference: [] }
+	}));
+
+	controller1 = renderer.xr.getController(0);
+	controller1.addEventListener('selectstart', onSelectStart);
+	controller1.addEventListener('selectend', onSelectEnd);
+	scene.add(controller1);
+
+	controller2 = renderer.xr.getController(1);
+	controller2.addEventListener('selectstart', onSelectStart);
+	controller2.addEventListener('selectend', onSelectEnd);
+	scene.add(controller2);
+
+	const controllerModelFactory = new XRControllerModelFactory();
+	controllerGrip1 = renderer.xr.getControllerGrip(0);
+	controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+	scene.add(controllerGrip1);
+	controllerGrip2 = renderer.xr.getControllerGrip(1);
+	controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
+	scene.add(controllerGrip2);
+
+	const geometry = new THREE.BufferGeometry().setFromPoints([
+		new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)
+	]);
+	const line = new THREE.Line(geometry);
+	line.name = 'line';
+	line.scale.z = 5;
+	controller1.add(line.clone());
+	controller2.add(line.clone());
+
+	raycaster = new THREE.Raycaster();
+
+	await setupUI();
+	loadModel(officeModelUrl);
+
+	createRandomObjects();
+	createVubeButton();
+
+	window.addEventListener('resize', onWindowResize);
+}
+
+function onSessionStarted(session) {
+	renderer.xr.setSession(session);
+}
+
+async function setupUI() {
+	await DigitalBaconUI.init(container, renderer, scene, camera);
+
+	uiBody = new DigitalBaconUI.Body({
+		borderRadius: 0.06,
+		borderWidth: 0.005,
+		justifyContent: 'center',
+		materialColor: 0x222222,
+		opacity: 0.9,
+		padding: 0.06,
+		width: 0.6,
+	});
+	scene.add(uiBody);
+
+	const moveButton = new DigitalBaconUI.Div({
+		backgroundVisible: true,
+		borderRadius: 0.05,
+		height: 0.1,
+		justifyContent: 'center',
+		marginBottom: 0.05,
+		materialColor: 0xff4081,
+		width: 0.5,
+	});
+
+	const buttonText = new DigitalBaconUI.Text('MOVE Wendy', {
+		color: '#ffffff',
+		fontSize: 0.055,
+		maxWidth: '100%'
+	});
+
+	moveButton.add(buttonText);
+	uiBody.add(moveButton);
+
+	moveButton.onClick = () => {
+		if (loadedModel) {
+			loadedModel.rotation.y += Math.PI / 4;
+		}
+	};
+
+	DigitalBaconUI.InputHandler.enableXRControllerManagement(scene);
+}
+
+function createRandomObjects() {
 	const geometries = [
-		//new THREE.BoxGeometry( 0.2, 0.2, 0.2 ),
-		//new THREE.ConeGeometry( 0.2, 0.2, 64 ),
-		new THREE.CylinderGeometry( 0.2, 0.2, 0.2, 64 ),
-		new THREE.IcosahedronGeometry( 0.2, 8 ),
-		new THREE.TorusGeometry( 0.2, 0.04, 64, 32 )
+		new THREE.CylinderGeometry(0.2, 0.2, 0.2, 64),
+		new THREE.IcosahedronGeometry(0.2, 8),
+		new THREE.TorusGeometry(0.2, 0.04, 64, 32)
 	];
 
-	for ( let i = 0; i < 5; i ++ ) {
-		const geometry = geometries[ Math.floor( Math.random() * geometries.length ) ];
-		const material = new THREE.MeshStandardMaterial( {
+	for (let i = 0; i < 5; i++) {
+		const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+		const material = new THREE.MeshStandardMaterial({
 			color: Math.random() * 0xffffff,
 			roughness: 0.7,
 			metalness: 0.0
-		} );
-		const object = new THREE.Mesh( geometry, material );
-		object.position.x = Math.random() * 4 - 2;
-		object.position.y = Math.random() * 2;
-		object.position.z = Math.random() * 4 - 2;
-		object.rotation.x = Math.random() * 2 * Math.PI;
-		object.rotation.y = Math.random() * 2 * Math.PI;
-		object.rotation.z = Math.random() * 2 * Math.PI;
-		object.scale.setScalar( Math.random() + 0.5 );
+		});
+		const object = new THREE.Mesh(geometry, material);
+		object.position.set(Math.random() * 4 - 2, Math.random() * 2, Math.random() * 4 - 2);
+		object.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+		object.scale.setScalar(Math.random() + 0.5);
 		object.castShadow = true;
 		object.receiveShadow = true;
 		group.add(object);
 	}
+}
 
-	renderer = new THREE.WebGLRenderer( { antialias: true } );
-	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( window.innerWidth, window.innerHeight );
-	renderer.setAnimationLoop( animate );
-	renderer.shadowMap.enabled = true;
-	renderer.xr.enabled = true;
-	container.appendChild( renderer.domElement );
-	document.body.appendChild( XRButton.createButton( renderer, {
-		'optionalFeatures': [ 'depth-sensing' ],
-		'depthSensing': { 'usagePreference': [ 'gpu-optimized' ], 'dataFormatPreference': [] }
-	}));
-	function onSessionStarted(session) {
-		renderer.xr.setSession(session);
-	}
-
-	controller1 = renderer.xr.getController( 0 );
-	controller1.addEventListener( 'selectstart', onSelectStart );
-	controller1.addEventListener( 'selectend', onSelectEnd );
-	scene.add( controller1 );
-
-	controller2 = renderer.xr.getController( 1 );
-	controller2.addEventListener( 'selectstart', onSelectStart );
-	controller2.addEventListener( 'selectend', onSelectEnd );
-	scene.add( controller2 );
-
-	const controllerModelFactory = new XRControllerModelFactory();
-	controllerGrip1 = renderer.xr.getControllerGrip( 0 );
-	controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-	scene.add( controllerGrip1 );
-	controllerGrip2 = renderer.xr.getControllerGrip( 1 );
-	controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-	scene.add( controllerGrip2 );
-
-	const geometry = new THREE.BufferGeometry().setFromPoints( [ new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, - 1 ) ] );
-	const line = new THREE.Line( geometry );
-	line.name = 'line';
-	line.scale.z = 5;
-	controller1.add( line.clone() );
-	controller2.add( line.clone() );
-	raycaster = new THREE.Raycaster();
-
-	// Create vubeButton
+function createVubeButton() {
 	const buttonGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.01);
 	const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 	vubeButton = new THREE.Mesh(buttonGeometry, buttonMaterial);
 	vubeButton.name = 'vubeButton';
 	scene.add(vubeButton);
-
-	window.addEventListener( 'resize', onWindowResize );
-	loadModel(officeModelUrl);
 }
-
-/////////////////////////////////////////////////////
-// UI not working yet
-// const container2 = new ThreeMeshUI.Block({
-//  width: 1.2,
-//  height: 0.7,
-//  padding: 0.2,
-//  fontFamily: './assets/Roboto-msdf.json',
-//  fontTexture: './assets/Roboto-msdf.png',
-// });
-
-// //
-
-// const text = new ThreeMeshUI.Text({
-//  content: "Some text to be displayed"
-// });
-
-// container2.add( text );
-
-// // scene is a THREE.Scene (see three.js)
-// scene.add( container2 );
-
-// // This is typically done in the render loop :
-// ThreeMeshUI.update();
-//////////////////////////////////////////////////////////
 
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function onSelectStart(event) {
@@ -187,22 +212,16 @@ function onSelectStart(event) {
 	const intersections = getIntersections(controller);
 
 	if (intersections.length > 0 && intersections[0].object.name === 'vubeButton') {
-		if (loadedModel) {
-			//loadedModel.rotation.y += Math.PI / 4;
-			loadedModel.position.z += 0.1;
-		}
+		if (loadedModel) loadedModel.position.z += 0.1;
 		return;
 	}
 
 	if (intersections.length > 0) {
-		const intersection = intersections[0];
-		const object = intersection.object;
-
-		if (object.parent && (object.parent.parent === loadedModel)) {
-			const modelRoot = loadedModel;
+		const object = intersections[0].object;
+		if (object.parent && object.parent.parent === loadedModel) {
 			object.material.emissive.b = 1;
-			controller.attach(modelRoot);
-			controller.userData.selected = modelRoot;
+			controller.attach(loadedModel);
+			controller.userData.selected = loadedModel;
 			controller.userData.selectedMesh = object;
 		} else {
 			object.material.emissive.b = 1;
@@ -210,13 +229,12 @@ function onSelectStart(event) {
 			controller.userData.selected = object;
 		}
 	}
-
 	controller.userData.targetRayMode = event.data.targetRayMode;
 }
 
 function onSelectEnd(event) {
 	const controller = event.target;
-	if (controller.userData.selected !== undefined) {
+	if (controller.userData.selected) {
 		const object = controller.userData.selected;
 		if (controller.userData.selectedMesh) {
 			controller.userData.selectedMesh.material.emissive.b = 0;
@@ -232,21 +250,18 @@ function onSelectEnd(event) {
 function getIntersections(controller) {
 	controller.updateMatrixWorld();
 	raycaster.setFromXRController(controller);
-
 	const objectsToTest = [];
 	group.traverse(child => {
 		if (child.isMesh) objectsToTest.push(child);
 	});
 	objectsToTest.push(vubeButton);
-
 	return raycaster.intersectObjects(objectsToTest, false);
 }
 
 function loadModel(modelurl) {
 	const loader = new GLTFLoader();
-	const modelPath = modelurl;
 	loader.load(
-		modelPath,
+		modelurl,
 		gltf => {
 			loadedModel = gltf.scene;
 			loadedModel.position.set(0, 1.3, 0);
@@ -254,22 +269,19 @@ function loadModel(modelurl) {
 			loadedModel.scale.set(0.1, 0.1, 0.1);
 			group.add(loadedModel);
 			loadedModel.traverse(child => {
-				if (child.isMesh) {
-					child.material.emissive = child.material.emissive || new THREE.Color(0, 0, 0);
-				}
+				if (child.isMesh) child.material.emissive = child.material.emissive || new THREE.Color(0, 0, 0);
 			});
 		},
 		xhr => {
 			if (xhr.lengthComputable) {
-				const progress = (xhr.loaded / xhr.total) * 100;
-				console.log(`Loading model: ${progress.toFixed(2)}% completed`);
+				console.log(`Loading model: ${(xhr.loaded / xhr.total * 100).toFixed(2)}% completed`);
 			} else {
 				console.log(`Loaded ${xhr.loaded} bytes`);
 			}
 		},
 		error => {
 			console.error('❌ Error loading model:', error);
-			console.error('Failed to load model from path:', modelPath);
+			console.error('Failed to load model from path:', modelurl);
 		}
 	);
 }
@@ -295,35 +307,30 @@ function intersectObjects(controller) {
 function cleanIntersected() {
 	while (intersected.length) {
 		const object = intersected.pop();
-		if (object && object.material) {
-			object.material.emissive.r = 0;
-		}
+		if (object && object.material) object.material.emissive.r = 0;
 	}
 }
 
-function animate() {
+function animate(time, frame) {
 	cleanIntersected();
-	intersectObjects( controller1 );
-	intersectObjects( controller2 );
+	intersectObjects(controller1);
+	intersectObjects(controller2);
+
 	if (loadedModel) {
 		const elapsed = (Date.now() - startTime) / 1000;
-		const bounce = 0.06 * Math.sin(elapsed);
-		loadedModel.position.y = baseY + bounce;
+		loadedModel.position.y = baseY + 0.06 * Math.sin(elapsed);
 	}
 
-	// Distance in front of camera
 	const distance = 0.5;
-	// Get camera forward direction
 	const cameraDirection = new THREE.Vector3();
 	camera.getWorldDirection(cameraDirection);
 
-	// Calculate new position: in front + 1 meter down
-	vubeButton.position.copy(camera.position)
-		.add(cameraDirection.multiplyScalar(distance))  // in front
-		.add(new THREE.Vector3(0, -0.2, 0));              // 1 meter down
+	DigitalBaconUI.update(frame);
 
-	// Make button face same way as camera (parallel)
+	vubeButton.position.copy(camera.position)
+		.add(cameraDirection.multiplyScalar(distance))
+		.add(new THREE.Vector3(0, -0.2, 0));
 	vubeButton.quaternion.copy(camera.quaternion);
 
-	renderer.render( scene, camera );
+	renderer.render(scene, camera);
 }
