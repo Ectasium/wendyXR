@@ -166,7 +166,7 @@ function init() {
 		tempMatrix.identity().extractRotation(controller.matrixWorld);
 		raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
 		raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-	};
+	};	
 
 	// Create and add a button in 3D space
 	function createButton(text, name) {
@@ -238,7 +238,7 @@ function onSelectStart(event) {
 		}
 	}
 
-	controller.userData.targetRayMode = event.data.targetRayMode;
+	controller.userData.targetRayMode = event.data.targetRayMode;	
 }
 
 // Handler for controller select end
