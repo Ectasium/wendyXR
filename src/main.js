@@ -4,7 +4,7 @@ import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'; 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import officeModelUrl from './models/wendy.glb';
-import * as DigitalBaconUI from 'DigitalBacon-UI';
+import * as DigitalBaconUI from 'DigitalBacon.js';
 
 let container;
 let camera, scene, renderer;
