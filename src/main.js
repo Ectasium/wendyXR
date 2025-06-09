@@ -361,7 +361,13 @@ function animate() {
 		.add(cameraDirection.multiplyScalar(distance))
 		.add(new THREE.Vector3(0, -0.2, 0)); // slightly below center
 
-	moveButton.quaternion.copy(camera.quaternion); // always face the user
+	// Create a horizontal quaternion based on the camera's yaw only
+	const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+	euler.setFromQuaternion(camera.quaternion);
+	euler.x = 0; // remove pitch
+	euler.z = 0; // remove roll
+
+	moveButton.quaternion.setFromEuler(euler); // horizontal alignment only
 
 	renderer.render(scene, camera);
 }
