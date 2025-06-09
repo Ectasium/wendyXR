@@ -199,7 +199,7 @@ function init() {
 		return buttonMesh;
 	}
 
-	moveButton = createButton('Hi!👋', 'moveButton');
+	moveButton = createButton('👉 Click me ', 'moveButton');
 	scene.add(moveButton); // Add the button to the scene
 
 	window.addEventListener('resize', onWindowResize); // Handle screen resize
@@ -360,6 +360,8 @@ function animate() {
 	const dir = ndc.clone().sub(camera.position).normalize();
 	const distance = 0.5; // distance in front of the camera
 	const targetPos = camera.position.clone().add(dir.multiplyScalar(distance));
+
+	targetPos.y += 0.08;
 
 	moveButton.position.copy(targetPos);
 
