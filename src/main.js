@@ -352,25 +352,18 @@ function animate() {
 		loadedModel.position.y = baseY + bounce;
 	}
 
-	// Position the 3D button at bottom of the viewport
-	const distance = 0.5;
+	// === Position the 3D button at the bottom center of the screen ===
+	const ndc = new THREE.Vector3(0, -0.9, 0.5); // X=0 (center), Y=-0.9 (bottom), Z=0.5 (distance into scene)
+	ndc.unproject(camera);
 
-	// Get camera basis vectors
-	const cameraDirection = new THREE.Vector3();
-	camera.getWorldDirection(cameraDirection);
+	// Compute direction from camera to unprojected point
+	const dir = ndc.clone().sub(camera.position).normalize();
+	const distance = 0.5; // distance in front of the camera
+	const targetPos = camera.position.clone().add(dir.multiplyScalar(distance));
 
-	const cameraRight = new THREE.Vector3();
-	cameraRight.setFromMatrixColumn(camera.matrixWorld, 0);
+	moveButton.position.copy(targetPos);
 
-	const cameraUp = new THREE.Vector3();
-	cameraUp.setFromMatrixColumn(camera.matrixWorld, 1);
-
-	// Compute world position in front of camera, slightly below center (bottom of view)
-	moveButton.position.copy(camera.position)
-		.add(cameraDirection.multiplyScalar(distance))
-		.add(cameraUp.multiplyScalar(-0.25)); // adjust for bottom position
-
-	// Lock rotation horizontally to match yaw only
+	// Lock rotation to horizontal (yaw only)
 	const euler = new THREE.Euler(0, 0, 0, 'YXZ');
 	euler.setFromQuaternion(camera.quaternion);
 	euler.x = 0;
@@ -379,4 +372,5 @@ function animate() {
 
 	renderer.render(scene, camera);
 }
+
 
