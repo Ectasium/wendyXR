@@ -374,7 +374,7 @@ function animate() {
 	}
 
 	// === Position the 3D button at the bottom center of the screen ===
-	const ndc = new THREE.Vector3(0, -0.9, 0.5); // X=0 (center), Y=-0.9 (bottom), Z=0.5 (distance into scene)
+	const ndc = new THREE.Vector3(-0.9, -0.4, 0.5); // X=0 (center), Y=-0.9 (bottom), Z=0.5 (distance into scene)
 	ndc.unproject(camera);
 
 	// Compute direction from camera to unprojected point
