@@ -22,6 +22,27 @@ let moveButton;
 // Initialize the scene
 init();
 
+function detectOS() {
+	const userAgent = navigator.userAgent;
+	const platform = navigator.userAgentData?.platform || navigator;
+	
+	// OS detection logic using the constants above
+	if (/Win/.test(platform) || /Windows/.test(userAgent)) return "Windows";
+	if ((/iPhone|iPad|iPod/.test(platform) || /iPhone|iPad|iPod/.test(userAgent)) || 
+		(/Mac/.test(platform) && navigator.maxTouchPoints > 0)) return "iOS";
+	if (/Mac/.test(platform) || /Macintosh/.test(userAgent)) return "macOS";
+	if (/Android/.test(userAgent)) return "Android";
+	if (/Linux/.test(platform) || (/Linux/.test(userAgent) && !/Android/.test(userAgent))) return "Linux";
+	if (/CrOS/.test(userAgent)) return "ChromeOS";
+	if (/FreeBSD/.test(platform)) return "FreeBSD";
+	if (/OpenBSD/.test(platform)) return "OpenBSD";
+	if (/NetBSD/.test(platform)) return "NetBSD";
+	
+	return "Unknown OS";
+  }
+  
+  console.log("Operating System:", detectOS());
+
 // Main initialization function
 function init() {
 	// Create DOM container for WebGL canvas
