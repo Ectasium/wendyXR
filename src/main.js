@@ -22,6 +22,7 @@ let moveButton;
 // Initialize the scene
 init();
 
+//Maybe this could be useful für checking, in which environment we are in/which headset we are using (though XR also does some detection)
 function detectOS() {
 	const userAgent = navigator.userAgent;
 	const platform = navigator.userAgentData?.platform || navigator;

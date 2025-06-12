@@ -14,6 +14,8 @@ npm install
 
 ### Clears Parcel's cache
 
+Parcel is used as a bundler/server https://parceljs.org/
+
 ./creset.sh
 
 ### Notes & Todos
